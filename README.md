@@ -12,10 +12,15 @@ With the exception of roster information which was scraped, data used in the pro
 
 ### Cleaning
 [X] Find data sources
+
 [X] Clean expenditure data
+
 [X] Clean coaching data
+
 [X] Clean recruiting data
+
 [X] Create and clean roster data
+
 [X] Clean game data
 
 ### Transformation
@@ -24,6 +29,7 @@ With the exception of roster information which was scraped, data used in the pro
 ## Phase 2 - Data Merging and Final Data Prep
 
 [ ] Merge data together.
+
 [ ] Perform and final data wrangling tasks
 
 ## Phase 3 - Final Data Visual and Tabular Exploration
@@ -36,14 +42,11 @@ With the exception of roster information which was scraped, data used in the pro
 
 ## Data Sources
 
-* Game data:
-  * https://github.com/cjmasini/football_predictor/blob/master/CFB%202011%202018.xlsx
+* [Historical game scores and stats data](https://github.com/cjmasini/football_predictor/blob/master/CFB%202011%202018.xlsx "Game data")
   
-* Coach data:
-  * https://docs.google.com/spreadsheets/d/1UXbBC7T4NtN1JwJs6Gk5Qm_y_pI1JXnOFtVuE3Iu3OQ/edit#gid=0
+* [Historical team coach data](https://docs.google.com/spreadsheets/d/1UXbBC7T4NtN1JwJs6Gk5Qm_y_pI1JXnOFtVuE3Iu3OQ/edit#gid=0)
   
-* Expenses data:
-  * http://cafidatabase.knightcommission.org/fbs
+* [Historical university expenses database website](http://cafidatabase.knightcommission.org/fbs)
   
-* Recruiting data:
-  * https://drive.google.com/drive/folders/0B13YvT1olZIfb2JJOTFNR3hUTHM
+* Historical recruiting rank data for each school
+  * Having trouble finding data source, downloaded over a year ago.
