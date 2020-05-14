@@ -11,34 +11,34 @@ With the exception of roster information which was scraped, data used in the pro
 **For phase 1, the data will be transformed, cleaned, and reformatted in a way so that they may be merged with other data to be used for modelling.**
 
 ### Cleaning
-[X] Find data sources
+* [X] Find data sources
 
-[X] Clean expenditure data
+* [X] Clean expenditure data
 
-[X] Clean coaching data
+* [X] Clean coaching data
 
-[X] Clean recruiting data
+* [X] Clean recruiting data
 
-[X] Create and clean roster data
+* [X] Create and clean roster data
 
-[X] Clean game data
+* [X] Clean game data
 
 ### Transformation
-[ ] Transform above data sets so that they may be merged into, with games as the base df
+* [ ] Transform above data sets so that they may be merged into, with games as the base df
 
 ## Phase 2 - Data Merging and Final Data Prep
 
-[ ] Merge data together.
+* [ ] Merge data together.
 
-[ ] Perform and final data wrangling tasks
+* [ ] Perform and final data wrangling tasks
 
 ## Phase 3 - Final Data Visual and Tabular Exploration
 
-[ ] Develop compelling visualizations and tables to show how the data is distributed.
+* [ ] Develop compelling visualizations and tables to show how the data is distributed.
 
 ## Phase 4 - Data Modeling and Results Visualization
 
-[ ] Explore various modeling algorithms, hyper-parameter tuning, and model results comparison.
+* [ ] Explore various modeling algorithms, hyper-parameter tuning, and model results comparison.
 
 ## Data Sources
 
