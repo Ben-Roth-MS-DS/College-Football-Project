@@ -66,39 +66,19 @@ name_column = ['Data']
 
 
 #clean less generizable stuff
-clean_cruits(wrong_list = old_expense2, right_list = new_expense2,
+expenses = clean_cruits(wrong_list = old_expense2, right_list = new_expense2,
              df = expenses, columns = name_column)
 
-expenses = expenses.dropna(subset = ['Total Football Spending', 'Total Expenses'])
 
+#"lag" column values by adding 1 to year column
+expenses['Year'] = expenses['Year'] + 1
 
-expenses['Total Football Spending Int'] = expenses['Total Football Spending'].str.replace('$','').str.replace(',','').astype(int)
-expenses['Total Expenses Int'] = expenses['Total Expenses'].str.replace('$','').str.replace(',','').astype(int)
+#drop columns that are unimportant
+expenses = expenses.drop(columns = ['IPEDS ID', 'NCAA Subdivision', 'FBS Conference'])
 
-
-expenses['footall_expense_pct'] = expenses['Total Football Spending Int']/expenses['Total Expenses Int']
-
-
-#create dfs for opponent 
-shift_cols = ['Total Football Spending Int', 'Total Expenses Int', 'footall_expense_pct']
-
-for col in shift_cols:
-    expenses[col + ' Lagged'] = expenses.groupby('Data')[col].shift()
-
-#select columns of interest
-expenses_fin = expenses[['Data', 'Year', 'Total Football Spending Int Lagged', 
-                         'Total Expenses Int Lagged', 'footall_expense_pct Lagged']]
-
-
-rename_dict = {'Data': 'Team',
-               'Total Expenses Int Lagged': 'Lagged Expenses',
-               'Total Football Spending Int Lagged': 'Lagged Football Spending',
-               'footall_expense_pct Lagged': 'Lagged Football Expenses Pct'
-               }
-
-#rename columns
-expenses_fin = expenses_fin.rename(columns = rename_dict)
+#rename 'data' column
+expenses = expenses.rename(columns = {'Data':'Team'})
 
 
 ## save so don't have to 
-expenses_fin.to_csv('../../Data/wrangled-data/expenses.csv')
+expenses.to_csv('../../Data/wrangled-data/expenses.csv')
