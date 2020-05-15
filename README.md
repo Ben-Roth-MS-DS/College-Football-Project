@@ -24,7 +24,9 @@ With the exception of roster information which was scraped, data used in the pro
 * [X] Clean game data
 
 ### Transformation
-* [ ] Transform above data sets so that they may be merged into, with games as the base df
+* [X] Game data transformed so that each team and their opponent have rolling, average stats (Points, turnovers, etc.) from previous 8 games.
+
+* [ ] Transform remaing data sets so that they may be merged together, with games as the base dataframe
 
 ## Phase 2 - Data Merging and Final Data Prep
 
