@@ -6,6 +6,7 @@ Created on Sat Mar  2 19:14:00 2019
 @author: Broth
 """
 import pandas as pd
+import numpy as np
 from recruiting_ranks import clean_cruits
 
 #turn off warning
@@ -39,20 +40,25 @@ new_win = ['Central Michigan','Eastern Michigan','Florida Atlantic','Louisiana T
            'USC','Texas Tech','Vanderbilt','Western Kentucky','Western Michigan',
            'Northern Illinois']
             
+
+
 win_columns = ['Winning','Losing']
 
 #apply function to new lists
 cfb_win = clean_cruits(wrong_list = old_win, right_list = new_win,
              df = cfb_win, columns = win_columns)
 
+
 #select columns of interest
-games = cfb_win[['Year', 'Week', 'Winning','Losing', 'Winning H/A/N', 'Losing H/A/N','Winning Conference', 
+games = cfb_win[['Year', 'Week', 'Winning','Losing', 'Winning H/A/N', 'Losing H/A/N', 'Winning Conference', 
                    'Losing Conference','Winning YPPA','Losing YPPA','Winning YPRA',
                    'Losing YPRA', 'Winning TOP', 'Losing TOP', 'Winning TO', 'Losing TO', 'Winning Points', 
                    'Losing Points','Winning Pen Yards','Losing Pen Yards']]
 
 
    
+games = games.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+
 team_list = sorted(games['Winning'].unique())
 
 
@@ -80,6 +86,13 @@ win_df = pd.DataFrame(columns = ['Team', 'Year', 'Week', 'Win'])
 
 lose_df = pd.DataFrame(columns = ['Team', 'Year', 'Week', 'Win'])
 
+games = games.replace({'Massachussets':'Massachusetts',
+                             'Massachussetts': 'Massachusetts',
+                            'Washignton':'Washington',
+                            'Virgina Tech': 'Virginia Tech',
+                            'Northwesern': 'Northwestern',
+                            'Miami, Ohio': 'Miami OH',
+                            'Coloardo State': 'Colorado State'})
 
 for row in range(len(games)):
     wins = list(games[['Winning', 'Year', 'Week']].values[row])
@@ -131,9 +144,13 @@ final_df = win_df.append(lose_df, ignore_index = True)
 #drop duplicates
 final_df = final_df.drop_duplicates()
 
-#replace invalid value with 0
-final_df['Team YPPA'] = final_df['Team YPPA'].replace('#DIV/0!', '0').astype(float)
 
+
+#replace invalid value with 0
+
+final_df[['Team YPPA', 'Opponent YPPA']]= final_df[['Team YPPA', 'Opponent YPPA']].replace('#DIV/0!', '0').astype(float)
+final_df = final_df.drop(columns = ['Opponent H/A/N'], axis = 1)
+        
 #replace string values with additional week number, convert to integers
 final_df['Week'] = final_df['Week'].replace('BOWL', '17') \
                                    .replace('Bowl', '17') \
@@ -142,16 +159,60 @@ final_df['Week'] = final_df['Week'].replace('BOWL', '17') \
                                    .replace('CFP Champ', '18') \
                                    .astype(int)
 
-#sort values 
-final_df = final_df.sort_values(['Year', 'Week', 'Team'])
 
-#attempt to create rolling average
-test = final_df.groupby(['Team','Year', 'Week'])['Team YPPA'].\
-                rolling(8, min_periods = 2).\
+
+#convert to int
+final_df['Win'] = final_df['Win'].astype(int)
+
+#strip white space     
+final_df = final_df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    
+### Test rolling function ###
+#sort values 
+final_df = final_df.sort_values(['Team','Year', 'Week']).reset_index(drop = True)
+
+test = final_df.copy()
+
+
+test['Team YPPA Past 8 Games'] = final_df.groupby('Team')['Team YPPA'].\
+                rolling(8, min_periods = 8).\
                 mean().\
-                reset_index(drop=True)
+                reset_index(drop = True)
     
 
+#list of columns to not aggregate
+no_cols = ['Team', 'Year', 'Week', 'Win', 'Team H/A/N', 'Opponent',
+           'Team Conference', 'Opponent Conference']
 
-#update conferences so that they reflect current years
-all_conf = sorted(games['Winning Conference'].unique())
+#list of columns to aggregate
+avg_cols = [col for col in final_df.columns if col not in no_cols]
+
+for col in avg_cols:
+    #average for team over previous 8 games
+    if 'Team' in col:
+        #order so that rolling works
+        final_df = final_df.sort_values(['Team','Year', 'Week']).reset_index(drop = True)
+        final_df[col + ' 8 Game Avg'] = final_df.groupby('Team')[col].\
+                                                 rolling(8, min_periods = 0).\
+                                                 mean().\
+                                                 reset_index(drop = True)
+                                                 
+    elif 'Opponent' in col:
+        final_df = final_df.sort_values(['Opponent','Year', 'Week']).reset_index(drop = True)
+        final_df[col + ' 8 Game Avg'] = final_df.groupby('Opponent')[col].\
+                                                 rolling(8, min_periods = 0).\
+                                                 mean().\
+                                                 reset_index(drop = True)
+
+#rolling average columns                                               
+rolled_cols = [col for col in final_df if '8 Game Avg' in col]
+
+#final columns of interest
+final_cols = avg_cols + rolled_cols
+
+final_df = final_df[final_cols]
+
+#safe df            
+final_df.to_csv('../../Data/wrangled-data/cfb_win.csv')
+         
+    
