@@ -26,9 +26,13 @@ With the exception of roster information which was scraped, data used in the pro
 ### Transformation
 * [X] Game data transformed so that each team and their opponent have rolling, average stats (Points, turnovers, etc.) from previous 8 games.
 
+* [ ] Began transforming expenses data.
+
 * [ ] Transform remaing data sets so that they may be merged together, with games as the base dataframe
 
 ## Phase 2 - Data Merging and Final Data Prep
+
+* [X] Test merge expenses together; university names do not match for several schools. 
 
 * [ ] Merge data together.
 
