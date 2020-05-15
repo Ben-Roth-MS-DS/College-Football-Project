@@ -208,7 +208,7 @@ for col in avg_cols:
 rolled_cols = [col for col in final_df if '8 Game Avg' in col]
 
 #final columns of interest
-final_cols = avg_cols + rolled_cols
+final_cols = no_cols + rolled_cols
 
 final_df = final_df[final_cols]
 
