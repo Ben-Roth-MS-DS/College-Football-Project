@@ -79,6 +79,5 @@ expenses = expenses.drop(columns = ['IPEDS ID', 'NCAA Subdivision', 'FBS Confere
 #rename 'data' column
 expenses = expenses.rename(columns = {'Data':'Team'})
 
-
 ## save so don't have to 
 expenses.to_csv('../../Data/wrangled-data/expenses.csv')
