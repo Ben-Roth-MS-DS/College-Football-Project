@@ -138,4 +138,5 @@ for team in roster_changes:
         
 
      
-
+#save final df
+model_df.to_csv('../../Data/model-data/model_data.csv')
