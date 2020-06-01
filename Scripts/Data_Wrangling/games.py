@@ -167,22 +167,33 @@ final_df['Win'] = final_df['Win'].astype(int)
 #strip white space     
 final_df = final_df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     
-### Test rolling function ###
-#sort values 
+
+#order team games
 final_df = final_df.sort_values(['Team','Year', 'Week']).reset_index(drop = True)
 
-test = final_df.copy()
+#Create team winning percentage past 10 games 
+final_df['Team Past 10 Winning Pct'] = final_df.groupby('Team')['Win'].\
+                                                 rolling(10, min_periods = 0).\
+                                                 mean().\
+                                                 reset_index(drop = True)
+                                                 
 
+#order opponent games
+final_df = final_df.sort_values(['Opponent','Year', 'Week']).reset_index(drop = True)
 
-test['Team YPPA Past 8 Games'] = final_df.groupby('Team')['Team YPPA'].\
-                rolling(8, min_periods = 8).\
-                mean().\
-                reset_index(drop = True)
-    
-
+#Create opponent winning percentage past 10 games 
+final_df['Opponent Past 10 Winning Pct'] = final_df.groupby('Opponent')['Win'].\
+                                                    rolling(10, min_periods = 0).\
+                                                    mean().\
+                                                    reset_index(drop = True) 
+                                                
+#subtract 1 from Winning Pct to repressent Opponent Winning pct
+final_df['Opponent Past 10 Winning Pct'] = 1 - final_df['Opponent Past 10 Winning Pct']                                          
+                                                 
 #list of columns to not aggregate
 no_cols = ['Team', 'Year', 'Week', 'Win', 'Team H/A/N', 'Opponent',
            'Team Conference', 'Opponent Conference']
+
 
 #list of columns to aggregate
 avg_cols = [col for col in final_df.columns if col not in no_cols]
