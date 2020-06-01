@@ -44,8 +44,6 @@ model_df = pd.merge(model_df, expenses_opp, on = ['Opponent', 'Year'], how = 'le
 ## Coaches Merge ##
 coaches = pd.read_csv('../../Data/wrangled-data/clean_coaches.csv', index_col = 0)
 
-#create column for coaches win
-model_df['Same Coach'] = np.nan
 
 coach_years = [col for col in coaches.columns if col not in ['FBS Team']]
 
@@ -56,9 +54,32 @@ for year in coach_years:
         val = coaches[(coaches['FBS Team'] == team)][year].iloc[0]
         
         #replace nan with value for team and year
-        model_df.loc[(model_df.Team == team) & (model_df.Year == int(year)), 'Same Coach'] = val
+        model_df.loc[(model_df.Team == team) & (model_df.Year == int(year)), 'Team Same Coach'] = val
+        
+        #replace nan with value for opponent and year
+        model_df.loc[(model_df.Opponent == team) & (model_df.Year == int(year)), 'Opponent Same Coach'] = val
         
         
         
+## Recruiting Ranks ##
+recruiting = pd.read_csv('../../Data/wrangled-data/rec_rank.csv', index_col = 0)
 
+#use same technique as coaching changes to fill in recruiting ranks
+rec_years = [col for col in recruiting.columns if col[:1] == '4' and int(col[-4:]) < max(model_df['Year'])]
+
+col = 'Recruiting Rank Avg Past 4 Years'
+
+#fill recruiting rank
+for year in rec_years:
+    for team in recruiting['Team'].values:
+        #find 1 or 0 for new coach or not
+        val = recruiting[(recruiting['Team'] == team)][year].iloc[0]
+        
+        #replace nan with value for team and year
+        model_df.loc[(model_df.Team == team) & (model_df.Year == int(year[-4:]) + 1), 'Team ' + col] = val
+        
+        #replace nan with value for team and year
+        model_df.loc[(model_df.Opponent == team) & (model_df.Year == int(year[-4:]) + 1), 'Opponent ' + col] = val
+        
+     
 
