@@ -207,4 +207,10 @@ roster_changes['Year'] = roster_changes.index
 
 roster_changes.index = range(len(roster_changes))
 
+#change column names to match what will be in final df
+roster_changes = roster_changes.rename(columns = lambda x : x.replace('-', ' '))
+
+roster_changes = roster_changes.rename(columns = lambda x : x.title())
+
+
 roster_changes.to_csv('../../Data/wrangled-data/roster_changes.csv')
