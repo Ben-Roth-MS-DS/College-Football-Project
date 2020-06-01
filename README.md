@@ -1,5 +1,5 @@
 # College-Football-Project
-Collecting, cleaning, transforming, merging, and modelling college football data
+Collecting, cleaning, transforming, merging, visualizing, and modelling college football data
 
 ## Overview 
 
