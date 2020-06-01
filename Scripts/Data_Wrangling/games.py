@@ -175,6 +175,7 @@ final_df = final_df.sort_values(['Team','Year', 'Week']).reset_index(drop = True
 final_df['Team Past 10 Winning Pct'] = final_df.groupby('Team')['Win'].\
                                                  rolling(10, min_periods = 0).\
                                                  mean().\
+                                                 round(4).\
                                                  reset_index(drop = True)
                                                  
 
@@ -185,14 +186,15 @@ final_df = final_df.sort_values(['Opponent','Year', 'Week']).reset_index(drop = 
 final_df['Opponent Past 10 Winning Pct'] = final_df.groupby('Opponent')['Win'].\
                                                     rolling(10, min_periods = 0).\
                                                     mean().\
+                                                    round(4).\
                                                     reset_index(drop = True) 
                                                 
 #subtract 1 from Winning Pct to repressent Opponent Winning pct
 final_df['Opponent Past 10 Winning Pct'] = 1 - final_df['Opponent Past 10 Winning Pct']                                          
                                                  
 #list of columns to not aggregate
-no_cols = ['Team', 'Year', 'Week', 'Win', 'Team H/A/N', 'Opponent',
-           'Team Conference', 'Opponent Conference']
+no_cols = ['Team', 'Year', 'Week', 'Win', 'Team H/A/N', 'Opponent', 'Team Conference', 
+           'Opponent Conference', 'Team Past 10 Winning Pct', 'Opponent Past 10 Winning Pct']
 
 
 #list of columns to aggregate
@@ -219,7 +221,7 @@ for col in avg_cols:
 rolled_cols = [col for col in final_df if '8 Game Avg' in col]
 
 #final columns of interest
-final_cols = no_cols + rolled_cols
+final_cols = no_cols + ['Team Past 10 Winning Pct', 'Opponent Past 10 Winning Pct'] + rolled_cols
 
 final_df = final_df[final_cols]
 
