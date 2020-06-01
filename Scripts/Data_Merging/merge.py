@@ -81,5 +81,61 @@ for year in rec_years:
         #replace nan with value for team and year
         model_df.loc[(model_df.Opponent == team) & (model_df.Year == int(year[-4:]) + 1), 'Opponent ' + col] = val
         
+
+##  Roster changes   ##
+roster_changes = pd.read_csv('../../Data/wrangled-data/roster_changes.csv', index_col = 0)
+
+#change column name formats to match what will be in final df
+roster_changes = roster_changes.rename(columns = lambda x : x.replace('-', ' '))
+roster_changes = roster_changes.rename(columns = lambda x : x.title())
+
+#find name differences between roster change columns and model_df
+model_rost_diffs = np.setdiff1d(model_df.Team.unique(), roster_changes.columns, assume_unique = True)
+rost_diffs = np.setdiff1d(roster_changes.columns, model_df.Team.unique(), assume_unique = True)
+
+#create roster col dicts
+rost_cols = {
+        'Bowling Green State': 'Bowling Green',
+        'Brigham Young': 'BYU',
+        'Florida International': 'FIU',
+        'Louisiana State': 'LSU',
+        'Miami Fl': 'Miami FL',
+        'Miami Oh': 'Miami OH',
+        'Middle Tennessee State': 'Middle Tennessee',
+        'Nevada Las Vegas': 'UNLV',
+        'North Carolina State': 'NC State',
+        'Southern Methodist': 'SMU',
+        'Texas Am': 'Texas A&M',
+        'Southern Mississippi': 'Southern Miss',
+        'Texas Christian': 'TCU',
+        'Alabama Birmingham': 'UAB',
+        'Central Florida': 'UCF',
+        'Ucla': 'UCLA',
+        'Southern California': 'USC',
+        'Texas El Paso': 'UTEP',
+        'Texas San Antonio': 'UTSA',
+        }
+
+roster_changes = roster_changes.rename(columns = rost_cols)
+
+#get roster years
+ros_years = roster_changes['Year'].values
+for team in roster_changes:
+    if team != 'Year':
+        for year in ros_years:
+    
+            #get roster change from past year 
+            val = roster_changes[roster_changes['Year'] == year][team].iloc[0]
+            
+            #replace nan with value for team and year
+            model_df.loc[(model_df.Team == team) & (model_df.Year == int(year)), 'Team Roster Changes'] = val
+        
+            #replace nan with value for team and year
+            model_df.loc[(model_df.Opponent == team) & (model_df.Year == year), 'Opponent Roster Changes'] = val
+            
+    else:
+        continue
+        
+
      
 
