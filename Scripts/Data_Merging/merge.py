@@ -136,6 +136,15 @@ for team in roster_changes:
     else:
         continue
         
+    
+model2018 = model_df[model_df['Year'] == 2018]
+#update conference names
+conf_dict = dict(zip(model2018['Team'], model2018['Team Conference']))
+
+for team, conference in conf_dict.items():
+    model_df.loc[model_df['Team'] == team, 'Team Conference'] = conference
+    model_df.loc[model_df['Opponent'] == team, 'Opponent Conference'] = conference
+
 
      
 #save final df
