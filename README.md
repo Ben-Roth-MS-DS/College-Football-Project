@@ -24,19 +24,17 @@ With the exception of roster information which was scraped, data used in the pro
 * [X] Clean game data
 
 ### Transformation
-* [X] Game data transformed so that each team and their opponent have rolling, average stats (Points, turnovers, etc.) from previous 8 games.
+* [X] Each data set transformed so that it is ready to merge.
 
-* [ ] Began transforming expenses data.
-
-* [ ] Transform remaing data sets so that they may be merged together, with games as the base dataframe
+* [ ] Investigate roster changes with suspiciously high numbers.
 
 ## Phase 2 - Data Merging and Final Data Prep
 
 * [X] Test merge expenses together; university names do not match for several schools. 
 
-* [ ] Merge data together.
+* [X] Merge data together.
 
-* [ ] Perform and final data wrangling tasks
+* [X] Perform and final data wrangling tasks
 
 ## Phase 3 - Final Data Visual and Tabular Exploration
 
@@ -55,4 +53,4 @@ With the exception of roster information which was scraped, data used in the pro
 * [Historical university expenses database website](http://cafidatabase.knightcommission.org/fbs)
   
 * Historical recruiting rank data for each school
-  * Having trouble finding data source, downloaded over a year ago.
+  * Having trouble finding exact data source used, downloaded over a year ago.
