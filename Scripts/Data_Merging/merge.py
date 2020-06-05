@@ -137,15 +137,50 @@ for team in roster_changes:
         continue
         
     
-model2018 = model_df[model_df['Year'] == 2018]
-#update conference names
-conf_dict = dict(zip(model2018['Team'], model2018['Team Conference']))
+#create dict to make uniform conference names
+conf_dict = {
+        'Big 10': 'Big Ten',
+        'independent': 'Ind.',
+        'Independent': 'Ind.',
+        'Big12':'Big 12'
+        }
 
-for team, conference in conf_dict.items():
-    model_df.loc[model_df['Team'] == team, 'Team Conference'] = conference
-    model_df.loc[model_df['Opponent'] == team, 'Opponent Conference'] = conference
+for wrong,right in conf_dict.items():
+    model_df.loc[model_df['Team Conference'] == wrong, 'Team Conference'] = right
+    model_df.loc[model_df['Opponent Conference'] == wrong, 'Opponent Conference'] = right
 
+#### remove conferences that no longer exist, replace that value with team's next conference ####
 
-     
+#set max year
+max_year = max(model_df.Year.values)
+
+#list of 'modern' conferences
+recent_conf = model_df[model_df['Year'] == max_year]['Team Conference'].unique()
+
+#data frame of incorrect team/values
+still_wrong = model_df.loc[~model_df['Team Conference'].isin(recent_conf), ['Team', 'Year']] .\
+                       drop_duplicates()
+                       
+#sort value so take most recent year (meaning the following year will be 'right')
+still_wrong = still_wrong.sort_values('Year', ascending = False)
+
+                       
+#go through each unique team/conference/year where conference is wrong
+while len(still_wrong) > 0 :
+    for team, year in still_wrong.itertuples(index = False):
+        #take next years conference
+        new_val = model_df.loc[(model_df['Team'] == team) & (model_df['Year'] == year + 1), 'Team Conference'].\
+                           values[0]
+        
+        #replace 'wrong' conference with 'right' conference 
+        model_df.loc[(model_df['Team'] == team) & (model_df['Year'] == year), 'Team Conference'] = new_val
+        model_df.loc[(model_df['Opponent'] == team) &  (model_df['Year'] == year), 'Opponent Conference'] = new_val
+
+        #reset still wrong variable so won't contain most recent fix
+        #data frame of incorrect team/values
+        still_wrong = model_df.loc[~model_df['Team Conference'].isin(recent_conf), ['Team', 'Team Conference', 'Year']] .\
+                               drop_duplicates()
+        still_wrong = still_wrong.sort_values('Year', ascending = False)
+    
 #save final df
 model_df.to_csv('../../Data/model-data/model_data.csv')
