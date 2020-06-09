@@ -19,13 +19,12 @@ expenses = pd.read_csv('../../Data/wrangled-data/expenses.csv', index_col = 0)
 
 #find name diffs
 model_diffs = np.setdiff1d(games['Team'].unique(), expenses['Team'].unique(), assume_unique = True)
-
 exp_diffs = np.setdiff1d(expenses['Team'].unique(), games['Team'].unique(), assume_unique = True)
 
 #get rid of scientific notation in numeric columns
 cols = [col for col in expenses.columns if col not in ['Team', 'Year']]
-
 expenses[cols] = expenses[cols].round(0)
+
 #create expenses data to merge for opponents 
 expenses_opp = expenses.copy()
 
@@ -145,6 +144,7 @@ conf_dict = {
         'Big12':'Big 12'
         }
 
+#use dict to change conference values
 for wrong,right in conf_dict.items():
     model_df.loc[model_df['Team Conference'] == wrong, 'Team Conference'] = right
     model_df.loc[model_df['Opponent Conference'] == wrong, 'Opponent Conference'] = right
