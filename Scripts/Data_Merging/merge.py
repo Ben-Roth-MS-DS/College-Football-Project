@@ -66,9 +66,8 @@ recruiting = pd.read_csv('../../Data/wrangled-data/rec_rank.csv', index_col = 0)
 #use same technique as coaching changes to fill in recruiting ranks
 rec_years = [col for col in recruiting.columns if col[:1] == '4' and int(col[-4:]) < max(model_df['Year'])]
 
-col = 'Recruiting Rank Avg Past 4 Years'
-
 #fill recruiting rank
+col = 'Recruiting Rank Avg Past 4 Years'
 for year in rec_years:
     for team in recruiting['Team'].values:
         #find 1 or 0 for new coach or not
@@ -115,6 +114,7 @@ rost_cols = {
         'Texas San Antonio': 'UTSA',
         }
 
+#rename columns to match what is in final dataset
 roster_changes = roster_changes.rename(columns = rost_cols)
 
 #get roster years
