@@ -36,6 +36,8 @@ With the exception of roster information which was scraped, data used in the pro
 
 * [X] Perform and final data wrangling tasks
 
+* [] Create rolling averages for statistics of interest from previous 3, 6, 12 games
+
 ## Phase 3 - Final Data Visual and Tabular Exploration
 
 * [ ] Develop compelling visualizations and tables to show how the data is distributed.
