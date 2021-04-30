@@ -191,16 +191,19 @@ for i in time_df.index:
     else:
         time_df.iloc[i, 3] = time_df.iloc[i - 1, 3] + timedelta(7)
 
+#remove flag column
+time_df.drop('Flag', axis = 1, inplace = True)
+
 #merge back into main dataframes
 team_df = pd.merge(team_df, time_df, on = ['Year', 'Week'], how = 'left')
 opp_df = pd.merge(opp_df, time_df, on = ['Year', 'Week'], how = 'left')
 
+#ensure date type 
+team_df.syn_date = pd.to_datetime(team_df.syn_date).dt.date
+opp_df.syn_date = pd.to_datetime(opp_df.syn_date).dt.date
 
-
-final_df2 = team_df.join(opp_df, left_on = 'Opponent', right_on = 'Team')
-
-
-def rolling_lagging_group_by(dataframe, group, columns, window, min_roll_period = 2, index, lag_period = 1):
+#define rolling functions
+def rolling_lagging_group_by(dataframe, group, columns, window, index, min_roll_period = 2,  lag_period = 1):
     '''
     Function that creates rolling averages, returns dataframe with new columns
     for each column of interest
@@ -218,19 +221,81 @@ def rolling_lagging_group_by(dataframe, group, columns, window, min_roll_period 
     - dataframe: dataframe with rolled columns
     '''
     #set datetime index
-    dataframe =  dataframe\
-                     .groupby(group)\
-                     .apply(lambda x: x.set_index(index).resample('1D').first()).dropna(subset = [index])
+    dataframe =  dataframe.set_index(index)
     
-    #create rolling average
-    for column in columns:
-        #create new column
-        new_column = column + '_' + str(window) + '_game_average'
+  
+    #create new column
+    new_columns = {column: column + '_' + str(window) + '_game_average' for column in columns}
         
-        #rolling average
-        dataframe = dataframe.groupby([index])[column]\
-                             .apply(lambda x: x.shift().rolling(min_periods = min_period,window = window).mean())\
-                             .reset_index(name = new_column)    
+    #rolling average, reset index
+    grouped_dataframe = dataframe\
+                             .groupby(group)[columns]\
+                             .rolling(min_periods = min_roll_period, window = window).mean()\
+                             .reset_index()
+    
+    #rename columns
+    grouped_dataframe.rename(new_columns, axis = 1, inplace = True)
+    
+    return(grouped_dataframe)
+                             
+        
+## create group data frame for avg quarter season, half season and full season ##
+
+#set agg columns
+team_columns = [column for column in team_df.columns if ' ' in column]
+opp_columns = [column for column in opp_df.columns if ' ' in column]
+
+#ensure columns are proper datatype
+team_df[team_columns] = team_df[team_columns].apply(pd.to_numeric, errors='coerce')
+opp_df[opp_columns] = opp_df[opp_columns].apply(pd.to_numeric, errors='coerce')
+
+#3 games team df
+grouped_team_3 = rolling_lagging_group_by(dataframe = team_df, 
+                                          group = 'Team',
+                                          columns = team_columns,
+                                          window = 3, 
+                                          index = 'syn_date')
+
+#6 games team df
+grouped_team_6 = rolling_lagging_group_by(dataframe = team_df, 
+                                          group = 'Team',
+                                          columns = team_columns,
+                                          window = 6, 
+                                          index = 'syn_date')
+
+#12 games team df
+grouped_team_12 = rolling_lagging_group_by(dataframe = team_df, 
+                                          group = 'Team',
+                                          columns = team_columns,
+                                          window = 12, 
+                                          index = 'syn_date')
+
+#3 games opp df
+grouped_opp_3 = rolling_lagging_group_by(dataframe = opp_df, 
+                                         group = 'Opponent',
+                                         columns = opp_columns,
+                                         window = 3, 
+                                         index = 'syn_date')
+
+#6 games opp df
+grouped_opp_6 = rolling_lagging_group_by(dataframe = opp_df, 
+                                         group = 'Opponent',
+                                         columns = opp_columns,
+                                         window = 6, 
+                                         index = 'syn_date')
+
+#12 games opp df
+grouped_opp_12 = rolling_lagging_group_by(dataframe = opp_df, 
+                                         group = 'Opponent',
+                                         columns = opp_columns,
+                                         window = 12, 
+                                         index = 'syn_date')
 
 
+#join in single dataframes
+team_grouped = pd.merge(grouped_team_3, grouped_team_6, on = ['Team', 'syn_date'], how = 'left')
+team_grouped = pd.merge(team_grouped, grouped_team_12, on = ['Team', 'syn_date'], how = 'left')
+
+opp_grouped = pd.merge(grouped_opp_3, grouped_opp_6, on = ['Opponent', 'syn_date'], how = 'left')
+opp_grouped = pd.merge(opp_grouped, grouped_opp_12, on = ['Opponent', 'syn_date'], how = 'left')
 
