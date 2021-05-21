@@ -300,9 +300,39 @@ grouped_opp_12 = rolling_lagging_group_by(dataframe = opp_df,
 
 
 #join in single dataframes
-team_grouped = pd.merge(grouped_team_3, grouped_team_6, on = ['Team', 'syn_date'], how = 'left')
-team_grouped = pd.merge(team_grouped, grouped_team_12, on = ['Team', 'syn_date'], how = 'left')
+team_grouped = pd.merge(grouped_team_3, 
+                        grouped_team_6, 
+                        on = ['Team', 'syn_date'], how = 'left')
+team_grouped = pd.merge(team_grouped, 
+                        grouped_team_12, 
+                        on = ['Team', 'syn_date'], how = 'left')
 
-opp_grouped = pd.merge(grouped_opp_3, grouped_opp_6, on = ['Opponent', 'syn_date'], how = 'left')
-opp_grouped = pd.merge(opp_grouped, grouped_opp_12, on = ['Opponent', 'syn_date'], how = 'left')
+opp_grouped = pd.merge(grouped_opp_3, 
+                       grouped_opp_6, 
+                       on = ['Opponent', 'syn_date'], 
+                       how = 'left')
+opp_grouped = pd.merge(opp_grouped, 
+                       grouped_opp_12, 
+                       on = ['Opponent', 'syn_date'],
+                       how = 'left')
 
+### work with other dataframes ### 
+
+#convert coaches from wide to long
+coaches_long = pd.melt(coaches, id_vars='FBS Team', 
+                       value_name='coach_change', 
+                       var_name = 'year')
+
+#convert rosters from wide to long
+rosters_long = pd.melt(rosters, 
+                       id_vars='Year', 
+                       value_name='roster change amount', 
+                       var_name = 'Team')
+
+#clean up expenses columns
+expenses.drop(labels = ['IPEDS ID', 'NCAA Subdivision', 'FBS Conference'],
+              axis = 1,
+              inplace = True)
+
+#define variables of interest in each column
+expense
