@@ -202,6 +202,13 @@ opp_df = pd.merge(opp_df, time_df, on = ['Year', 'Week'], how = 'left')
 team_df.syn_date = pd.to_datetime(team_df.syn_date).dt.date
 opp_df.syn_date = pd.to_datetime(opp_df.syn_date).dt.date
 
+#change duplicate dates
+idx_team = team_df[team_df.groupby(['Team', 'Week', 'Year']).cumcount() > 0].index
+idx_opp = opp_df[opp_df.groupby(['Opponent', 'Week', 'Year']).cumcount() > 0].index
+
+team_df.loc[idx_team, 'syn_date'] = team_df.syn_date + datetime.timedelta(days = 3)
+opp_df.loc[idx_opp, 'syn_date'] = opp_df.syn_date + datetime.timedelta(days = 3)
+
 #define rolling functions
 def rolling_lagging_group_by(dataframe, group, columns, window, index, min_roll_period = 2,  lag_period = 1):
     '''
