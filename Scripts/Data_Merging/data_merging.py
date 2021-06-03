@@ -32,6 +32,25 @@ games = games[['Year', 'Week', 'Winning','Losing', 'Winning H/A/N', 'Losing H/A/
                    'Losing YPRA', 'Winning TOP', 'Losing TOP', 'Winning TO', 'Losing TO', 'Winning Points', 
                    'Losing Points','Winning Pen Yards','Losing Pen Yards']]
 
+games.Winning = games.Winning.str.strip()
+games.Losing = games.Losing.str.strip()
+
+games.Winning = games.Winning.str.replace()
+
+old_names = ['La. Lafayette', 'Massachussetts', 'Coloardo State', 'Miami, Ohio',
+             'Northwesern', 'Virgina Tech', 'Washignton']
+
+new_names = ['Louisiana Lafayette', 'Massachusetts', 'Colorado State', 'Miami OH',
+             'Northwestern', 'Virginia Tech', 'Washington']
+
+for i in range(len(old_names)):
+    #set values
+    old = old_names[i]
+    new = new_names[i]
+
+games.loc[games.Winning == 'Massachussetts', 'Winning'] = 'Massachusetts'
+games.loc[games.Losing == 'Massachussetts', 'Losing'] = 'Massachusetts'
+
 recruiting = pd.read_csv('./Data/wrangled-data/rec_rank.csv')
 recruiting = recruiting.drop(['Unnamed: 0'], axis = 1)
 
@@ -137,7 +156,7 @@ final_df.Date_Syn = pd.DatetimeIndex(final_df.Date_Syn)
 
 base_cols = ['Team', 'Opponent', 'Year', 'Week', 'Win']
 
-team_cols = ['Team YPPA', 'Team YPRA', 'Team TOP', 'Team TO', 'Team Points', 'Team Pen Yards']
+team_cols = ['Team YPPA', 'Team YPRA', 'Team TOP', 'Team TO', 'Team Points', 'Team Pen Yards', 'Team Conference']
 
 opp_cols = [x.replace('Team', 'Opponent') for x in team_cols]
 
@@ -246,11 +265,20 @@ def rolling_lagging_group_by(dataframe, group, columns, window, index, min_roll_
     return(grouped_dataframe)
                              
         
-## create group data frame for avg quarter season, half season and full season ##
+## create group data frame for avg quarter season, half season and full season= ##
 
 #set agg columns
-team_columns = [column for column in team_df.columns if ' ' in column]
-opp_columns = [column for column in opp_df.columns if ' ' in column]
+numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+
+#rename win columns, convert to numeric the get win pct last n games
+team_df.rename({'Win':'Team Win'}, inplace = True, axis = 1)
+team_df['Team Win'] = team_df['Team Win'].astype(int)
+
+opp_df.rename({'Win':'Opp Win'}, inplace = True, axis = 1)
+opp_df['Opp Win'] = opp_df['Opp Win'].astype(int)
+
+team_columns = [column for column in team_df.select_dtypes(include=numerics).columns if ' ' in column]
+opp_columns = [column for column in opp_df.select_dtypes(include=numerics).columns if ' ' in column] 
 
 #ensure columns are proper datatype
 team_df[team_columns] = team_df[team_columns].apply(pd.to_numeric, errors='coerce')
@@ -337,7 +365,9 @@ expenses.drop(labels = ['IPEDS ID', 'NCAA Subdivision', 'FBS Conference'],
 #join coaches into 
 
 #create base dataset to merge everything into 
-base = team_df[['Team', 'Opponent', 'syn_date', 'Year']]
+base = team_df[['Team', 'Opponent', 'syn_date', 'Year', 'Team Win', 'Team Earned Conference', 'Team Allowed Conference']]
+base.rename({'Team Earned Conference':'Team Conference', 'Team Allowed Conference':'Opponent Conference'}, axis = 1, inplace = True)
+
 base = pd.merge(base, team_grouped, on =  ['Team', 'syn_date'], how = 'left')
 base = pd.merge(base, opp_grouped, on = ['Opponent', 'syn_date'], how = 'left')
 
@@ -374,6 +404,23 @@ expenses.rename({'Data':'Team'}, axis = 1, inplace = True)
 base.Team = base.Team.astype(str)
 expenses.Team = expenses.Team.astype(str)
 
+#rename expense columns
+old_exp = ['Miami', 'Ole Miss', 'NIU', 'UNC', 'Pennsylvania State', 'Central Florida', 'Massachusetts']
+new_exp = ['Miami OH', 'Mississippi', 'Northern Illinois', 'North Carolina', 
+           'Penn State', 'UCF', 'Massachussetts']
+
+for i in 
+
+array([ 'Temple', 'Tulane',  'Vanderbilt', 'Arizona  ',
+       'Colorado  ', 'Florida  ', 'Mississippi  ', 'Washington  ',
+       'Michigan  ', 'Oklahoma  ', 'Georgia  ', 'Oregon  ', 'Kansas  ',
+       'Iowa  ', 'Ohio  ', 'Texas  ', 'Virginia  ', 'New Mexico  ',
+       'Utah  ', 'Virginia ', 'Texas ', 'Georgia ', 'Oregon ',
+       'La. Lafayette', 'Air Force', 'Arkansas  ', 'Florida ', 'Army',
+       'Massachussetts', 'Coloardo State', 'Liberty', 'Miami, Ohio',
+       'Northwesern', 'Virgina Tech', 'Washignton'],
+      dtype=object)
+
 # join
 team_dict = {col:'Team ' + col for col in expenses.columns if col != 'Year' and col != 'Team'}
 base = pd.merge(base,
@@ -392,8 +439,21 @@ base = pd.merge(base,
                 how = 'left'
                 )
 
+#replace weird conference values
+old_conf = ['Big12', 'independent']
+new_conf = ['Big 12', 'Independent']
+
+for i in range(len(old_conf)):
+    #get vals
+    old = old_conf[i]
+    new = new_conf[i]
+    
+    #replace team and opp
+    base.loc[base['Team Conference'] == old, 'Team Conference'] = new
+    base.loc[base['Opponent Conference'] == old, 'Opponent Conference'] = new
+
+base.loc[base.Team == 'Northwesern', 'Team'] = 'Northwestern'
+base.loc[base.Opponent == 'Northwesern', 'Opponent'] = 'Northwestern'
+
 #save
-base.to_csv('./Data/model-data/model_data.csv', index = False)
-
-
-
+base.to_csv('./Data/model-data/model_data.csv', index = True)
