@@ -334,5 +334,66 @@ expenses.drop(labels = ['IPEDS ID', 'NCAA Subdivision', 'FBS Conference'],
               axis = 1,
               inplace = True)
 
-#define variables of interest in each column
-expense
+#join coaches into 
+
+#create base dataset to merge everything into 
+base = team_df[['Team', 'Opponent', 'syn_date', 'Year']]
+base = pd.merge(base, team_grouped, on =  ['Team', 'syn_date'], how = 'left')
+base = pd.merge(base, opp_grouped, on = ['Opponent', 'syn_date'], how = 'left')
+
+#create team and oppoent coaches dataframe, merge into 
+coaches_team = coaches_long.rename(columns = {'FBS Team':'Team', 'year':'Year', 'coach_change':'Team Coach Change'})
+coaches_opp = coaches_long.rename(columns = {'FBS Team':'Opponent', 'year':'Year', 'coach_change':'Opp Coach_Change'})
+
+base = pd.merge(base, coaches_team, on = ['Team', 'Year'], how = 'left')
+base = pd.merge(base, coaches_opp, on = ['Opponent', 'Year'], how = 'left')
+
+#fix rosters-team names
+rosters_long.Team = rosters_long.Team.str.replace('-', ' ')
+rosters_long.Team = rosters_long.Team.str.title()
+
+#title columns 
+rosters_long.columns = rosters_long.columns.str.title()
+
+#join
+base = pd.merge(base, 
+                rosters_long.rename({'Roster Change Amount':'Team Roster Change Amount'}, axis = 1),
+                on = ['Team', 'Year'],
+                how = 'left')
+
+base = pd.merge(base, 
+                rosters_long.rename({'Roster Change Amount':'Opp Roster Change Amount', 'Team':'Opponent'}, axis = 1),
+                on = ['Opponent', 'Year'],
+                how = 'left')
+
+
+# expenses, rename columns
+expenses.rename({'Data':'Team'}, axis = 1, inplace = True)
+
+#specify types
+base.Team = base.Team.astype(str)
+expenses.Team = expenses.Team.astype(str)
+
+# join
+team_dict = {col:'Team ' + col for col in expenses.columns if col != 'Year' and col != 'Team'}
+base = pd.merge(base,
+                expenses.rename(team_dict, axis = 1),
+                left_on = ['Team', 'Year'],
+                right_on = ['Team', 'Year'],
+                how = 'left')
+
+
+opp_dict = {col:'Opp ' + col for col in expenses.columns if col != 'Year' and col != 'Team'}
+opp_dict = {**opp_dict, **{'Team':'Opponent'}}
+
+base = pd.merge(base,
+                expenses.rename(opp_dict, axis = 1),
+                on = ['Opponent', 'Year'],
+                how = 'left'
+                )
+
+#save
+base.to_csv('./Data/model-data/model_data.csv', index = False)
+
+
+
