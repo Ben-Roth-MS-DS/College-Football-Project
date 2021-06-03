@@ -35,21 +35,19 @@ games = games[['Year', 'Week', 'Winning','Losing', 'Winning H/A/N', 'Losing H/A/
 games.Winning = games.Winning.str.strip()
 games.Losing = games.Losing.str.strip()
 
-games.Winning = games.Winning.str.replace()
-
 old_names = ['La. Lafayette', 'Massachussetts', 'Coloardo State', 'Miami, Ohio',
-             'Northwesern', 'Virgina Tech', 'Washignton']
+             'Northwesern', 'Virgina Tech', 'Washignton', 'Massachussets']
 
 new_names = ['Louisiana Lafayette', 'Massachusetts', 'Colorado State', 'Miami OH',
-             'Northwestern', 'Virginia Tech', 'Washington']
+             'Northwestern', 'Virginia Tech', 'Washington', 'Massachusetts']
 
 for i in range(len(old_names)):
     #set values
     old = old_names[i]
     new = new_names[i]
 
-games.loc[games.Winning == 'Massachussetts', 'Winning'] = 'Massachusetts'
-games.loc[games.Losing == 'Massachussetts', 'Losing'] = 'Massachusetts'
+    games.loc[games.Winning == old, 'Winning'] = new
+    games.loc[games.Losing == old, 'Losing'] = new
 
 recruiting = pd.read_csv('./Data/wrangled-data/rec_rank.csv')
 recruiting = recruiting.drop(['Unnamed: 0'], axis = 1)
@@ -409,17 +407,12 @@ old_exp = ['Miami', 'Ole Miss', 'NIU', 'UNC', 'Pennsylvania State', 'Central Flo
 new_exp = ['Miami OH', 'Mississippi', 'Northern Illinois', 'North Carolina', 
            'Penn State', 'UCF', 'Massachussetts']
 
-for i in 
-
-array([ 'Temple', 'Tulane',  'Vanderbilt', 'Arizona  ',
-       'Colorado  ', 'Florida  ', 'Mississippi  ', 'Washington  ',
-       'Michigan  ', 'Oklahoma  ', 'Georgia  ', 'Oregon  ', 'Kansas  ',
-       'Iowa  ', 'Ohio  ', 'Texas  ', 'Virginia  ', 'New Mexico  ',
-       'Utah  ', 'Virginia ', 'Texas ', 'Georgia ', 'Oregon ',
-       'La. Lafayette', 'Air Force', 'Arkansas  ', 'Florida ', 'Army',
-       'Massachussetts', 'Coloardo State', 'Liberty', 'Miami, Ohio',
-       'Northwesern', 'Virgina Tech', 'Washignton'],
-      dtype=object)
+for i in range(len(old_exp)):
+    #set values
+    old = old_exp[i]
+    new = new_exp[i]
+    
+    expenses.loc[expenses.Team == old, 'Team'] = new
 
 # join
 team_dict = {col:'Team ' + col for col in expenses.columns if col != 'Year' and col != 'Team'}
@@ -452,8 +445,6 @@ for i in range(len(old_conf)):
     base.loc[base['Team Conference'] == old, 'Team Conference'] = new
     base.loc[base['Opponent Conference'] == old, 'Opponent Conference'] = new
 
-base.loc[base.Team == 'Northwesern', 'Team'] = 'Northwestern'
-base.loc[base.Opponent == 'Northwesern', 'Opponent'] = 'Northwestern'
 
 #save
 base.to_csv('./Data/model-data/model_data.csv', index = True)
