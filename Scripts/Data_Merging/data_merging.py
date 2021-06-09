@@ -380,6 +380,25 @@ base = pd.merge(base, coaches_opp, on = ['Opponent', 'Year'], how = 'left')
 rosters_long.Team = rosters_long.Team.str.replace('-', ' ')
 rosters_long.Team = rosters_long.Team.str.title()
 
+#replace mismatching names
+old_ros = ['Brigham Young', 'Bowling Green State', 'Florida International',
+           'Louisiana State', 'Miami Fl', 'Miami Oh', 'Middle Tennessee State',
+           'Southern Methodist', 'Southern Mississippi', 'Texas Christian', 'Texas Am',
+           'Ucla', 'Nevada Las Vegas', 'Southern California', 'North Carolina State',
+           'Alabama Birmingham', 'Central Florida', 'Texas El Paso', 'Texas San Antonio',
+           'Florida']
+
+new_ros = ['BYU', 'Bowling Green', 'FIU', 'LSU', 'Miami FL', 'Miami OH',
+           'Middle Tennessee', 'SMU', 'Southern Miss' , 'TCU', 'Texas A&M', 'UCLA',
+           'UNLV', 'USC', 'NC State', 'UAB',  'UCF', 'UTEP', 'UTSA', 'Florida']
+
+
+for i in range(len(old_ros)):
+    old = old_ros[i]
+    new = new_ros[i]
+    
+    rosters_long.loc[rosters_long.Team == old, 'Team'] = new
+
 #title columns 
 rosters_long.columns = rosters_long.columns.str.title()
 
