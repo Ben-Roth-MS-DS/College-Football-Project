@@ -370,6 +370,7 @@ base = pd.merge(base, team_grouped, on =  ['Team', 'syn_date'], how = 'left')
 base = pd.merge(base, opp_grouped, on = ['Opponent', 'syn_date'], how = 'left')
 
 #create team and oppoent coaches dataframe, merge into 
+coaches_long.year = coaches_long.year.astype(int)
 coaches_team = coaches_long.rename(columns = {'FBS Team':'Team', 'year':'Year', 'coach_change':'Team Coach Change'})
 coaches_opp = coaches_long.rename(columns = {'FBS Team':'Opponent', 'year':'Year', 'coach_change':'Opp Coach_Change'})
 
