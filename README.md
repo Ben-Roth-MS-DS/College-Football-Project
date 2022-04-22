@@ -17,11 +17,11 @@ The data for the project will be obtained through the cfbd api.
 
 * [X] Create rolling averages for statistics of interest from previous 3, 6, 12 games
 
-* [] Clean and transform team recruiting data
+* [ ] Clean and transform team recruiting data
 
-* [] Join game and recruiting data
+* [ ] Join game and recruiting data
 
-* [] Create fields for opponent game data and recruiting
+* [ ] Create fields for opponent game data and recruiting
 
 ## Phase 3 - Final Data Visual and Tabular Exploration
 
