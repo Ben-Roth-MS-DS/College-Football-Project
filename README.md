@@ -3,40 +3,25 @@ Collecting, cleaning, transforming, merging, visualizing, and modelling college 
 
 ## Overview 
 
-The overall purpose of this project is to develop a model to predict the winner of a given college football game. The eventual dependent variable will be a 1/0 binary variable (1 being if a team one their matchup, 0 if they lost), with input variables including each team's average stats (Yards per passing attempt, turnovers forced, rushing yards, etc) over the past n games, each team's opponents average stats over the past n games, team & opponent conference, team & opponent recruiting ranks over past 4 years, team & opponent university football spending from past year, coaching record over past n games, and changes in players on roster form past year. 
+The overall purpose of this project is to develop a model to predict the score of each team in a given college football game. In turn, this prediction will give the overall winner, the margin by which that team won, and the total number of points scored in the game. The eventual dependent variable will be a team's score during a given, with input variables including each team's average stats (Yards per passing attempt, turnovers forced, rushing yards, etc) over the past n games, each team's opponents average stats over the past n games, team & opponent conference, and team & opponent recruiting ranks over past 4 years. 
 
-With the exception of roster information which was scraped, data used in the project was found online, and will be sourced at the end of the document. Once the data was downloaded, slight edits were made in Excel so that it could be loaded into Python
+The data for the project will be obtained through the cfbd api.
 
 ## Phase 1 - Data Cleaning and Transformation
 **For phase 1, the data will be transformed, cleaned, and reformatted in a way so that they may be merged with other data to be used for modelling.**
 
-### Cleaning
+### Cleaning & Transformation
 * [X] Find data sources
 
-* [X] Clean expenditure data
+* [X] Clean and transform team game data
 
-* [X] Clean coaching data
+* [X] Create rolling averages for statistics of interest from previous 3, 6, 12 games
 
-* [X] Clean recruiting data
+* [] Clean and transform team recruiting data
 
-* [X] Create and clean roster data
+* [] Join game and recruiting data
 
-* [X] Clean game data
-
-### Transformation
-* [X] Each data set transformed so that it is ready to merge.
-
-* [ ] Investigate roster changes with suspiciously high numbers.
-
-## Phase 2 - Data Merging and Final Data Prep
-
-* [X] Test merge expenses together; university names do not match for several schools. 
-
-* [X] Merge data together.
-
-* [X] Perform and final data wrangling tasks
-
-* [ ] Create rolling averages for statistics of interest from previous 3, 6, 12 games
+* [] Create fields for opponent game data and recruiting
 
 ## Phase 3 - Final Data Visual and Tabular Exploration
 
@@ -44,15 +29,11 @@ With the exception of roster information which was scraped, data used in the pro
 
 ## Phase 4 - Data Modeling and Results Visualization
 
-* [ ] Explore various modeling algorithms, hyper-parameter tuning, and model results comparison.
+* [ ] Compare un-tuned base model algorithms to determine which will be used for further modelling efforts
+
+* [ ] Determine which period of time (1 season of data, 2 seasons of data, etc.) creates best model results 
 
 ## Data Sources
 
-* [Historical game scores and stats data](https://github.com/cjmasini/football_predictor/blob/master/CFB%202011%202018.xlsx "Game data")
+* [cfbd API](https://github.com/CFBD/cfbd-python)
   
-* [Historical team coach data](https://docs.google.com/spreadsheets/d/1UXbBC7T4NtN1JwJs6Gk5Qm_y_pI1JXnOFtVuE3Iu3OQ/edit#gid=0)
-  
-* [Historical university expenses database website](http://cafidatabase.knightcommission.org/fbs)
-  
-* Historical recruiting rank data for each school
-  * Having trouble finding exact data source used, downloaded over a year ago.
