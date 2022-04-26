@@ -10,6 +10,7 @@ import functools
 import pandas as pd
 import numpy as np
 import cfbd_stats
+import time
 
 #get api key
 file = open('../../Data/key.txt')
@@ -33,7 +34,7 @@ years = [year for year in range(min(team_rec_df.year), max(team_rec_df.year) + 1
 teams_instance = cfbd.TeamsApi(cfbd.ApiClient(configuration))
 
 #get teams
-teams_response = teams_instance.get_teams()
+teams_response = teams_instance.get_fbs_teams()
     
 #get teams by year
 teams_dict = [teams_response[i].to_dict() for i in range(len(teams_response))]
@@ -47,7 +48,12 @@ teams_df = pd.DataFrame(teams_dict2)
 #drop duplicates
 teams_df = teams_df.drop_duplicates(subset = ['school'])
 
-team_stats = [cfbd_stats.stats_function(team, years) for team in teams_df.school.values]
+#populate list of team dataframes
+team_stats = []
+for team in teams_df.school.values:
+    team_stats.append(cfbd_stats.stats_function(team, years) )
+    print(team)
+    time.sleep(np.random.rand())
     
 ### get list of teams/years
 ### run on everything

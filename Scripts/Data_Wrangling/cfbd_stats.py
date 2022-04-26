@@ -379,76 +379,74 @@ def stats_function(team,
     #concat to single df
     df = pd.concat(dfs, axis = 0)
     
-    if len(df) == 0:
-        return(pd.DataFrame())
     
-    else:
+    #ensure df is ordered correctly
+    df = df.sort_values(['season', 'week']).reset_index(drop = True)
     
-        #ensure df is ordered correctly
-        df = df.sort_values(['season', 'week']).reset_index(drop = True)
-    
-        for result in df.stat_type.unique():
-            df[result] = np.where(df.stat_type == result, 1, 0)
+    for result in df.stat_type.unique():
+        df[result] = np.where(df.stat_type == result, 1, 0)
 
-        # replace incorrect yardage amounts
-        df.loc[df.stat_type.isin(['Incompletion', 'Target', 'Interception Thrown', 'Fumble',
+    # replace incorrect yardage amounts
+    df.loc[df.stat_type.isin(['Incompletion', 'Target', 'Interception Thrown', 'Fumble',
                                   'Fumble Forced', 'Fumble Recovered']), 'stat']  = 0
 
-        #create explosive plays field
-        df.loc[((df.stat >= 12) & (df.stat_type == 'Rush')) | \
-               ((df.stat >= 15) & (df.stat_type == 'Completion')) \
-            , 'Explosive_Play'] = 1  
+    #create explosive plays field
+    df.loc[((df.stat >= 12) & (df.stat_type == 'Rush')) | \
+           ((df.stat >= 15) & (df.stat_type == 'Completion')) \
+        , 'Explosive_Play'] = 1  
     
-        df.loc[df.Explosive_Play.isna(), 'Explosive_Play'] = 0
+    df.loc[df.Explosive_Play.isna(), 'Explosive_Play'] = 0
 
-        #create list of rolled functions
-        stats_rolled = [all_rolling(df, stat) for stat in stats]
+    #create list of rolled functions
+    stats_rolled = [all_rolling(df, stat) for stat in stats]
     
-        #combine list of dataframes into single dataframe
-        stats_flat = functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), stats_rolled)
+    #combine list of dataframes into single dataframe
+    stats_flat = functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), stats_rolled)
 
-        #remove drives column
-        stats_flat.drop([column for column in stats_flat.columns if column[:5] == 'drive'], axis = 1, inplace = True)
+    #remove drives column
+    stats_flat.drop([column for column in stats_flat.columns if column[:5] == 'drive'], axis = 1, inplace = True)
 
-        #calculate drives and plays
-        rolled_basic = df.groupby('game_id').\
-                          agg({'play_id':'count', 
-                               'drive_id':lambda x: x.nunique()}).\
-                          reset_index().\
-                          rename(columns = {'play_id': 'plays',
+    #calculate drives and plays
+    rolled_basic = df.groupby('game_id').\
+                      agg({'play_id':'count', 
+                           'drive_id':lambda x: x.nunique()}).\
+                      reset_index().\
+                      rename(columns = {'play_id': 'plays',
                                             'drive_id': 'drives'})
 
-        #calculate plays/drives rolling averages
-        rolled_basic_avg = [rolled_basic.\
-                            rolling(window, 1).\
-                            mean()[['plays', 'drives']].\
-                            #reset_index(drop = True).\
-                            rename(columns = {column:column+'_' + str(window) + '_game_avg' for column in ['plays', 'drives']})
-                            for window in [3, 6, 12]]
+    #calculate plays/drives rolling averages
+    rolled_basic_avg = [rolled_basic.\
+                        rolling(window, 1).\
+                        mean()[['plays', 'drives']].\
+                        #reset_index(drop = True).\
+                        rename(columns = {column:column+'_' + str(window) + '_game_avg' for column in ['plays', 'drives']})
+                        for window in [3, 6, 12]]
     
-        #combine play counts/amounts and rolling averages into one
-        rolled_all = pd.concat([rolled_basic, pd.concat(rolled_basic_avg, axis = 1)], axis = 1)    
-
-        #join with rest of statistics
-        all_df = pd.merge(left = rolled_all,
-                          right = stats_flat,
-                          on = 'game_id')
-
-
-
-        #create list of rolled functions
-        downs_rolled = [[all_rolling_downs(df, down, stat) for stat in stats] for down in downs]
+    #combine play counts/amounts and rolling averages into one
+    rolled_all = pd.concat([rolled_basic, pd.concat(rolled_basic_avg, axis = 1)], axis = 1)    
     
-        #combine list of dataframes into lists by down
-        downs_rolled2 = [functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), downs_list) for downs_list in downs_rolled]
+    #join with rest of statistics
+    all_df = pd.merge(left = rolled_all,
+                      right = stats_flat,
+                      on = 'game_id')
 
-        #flatten into single dataframe
-        downs_flat = functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), [down_df for down_df in downs_rolled2 if len(down_df) > 0])
 
-        #merge with other list
-        all_df2= pd.merge(all_df, downs_flat, on = 'game_id')
 
-        return(all_df2)
+    #create list of rolled functions
+    downs_rolled = [[all_rolling_downs(df, down, stat) for stat in stats] for down in downs]
+    
+    #combine list of dataframes into lists by down
+    downs_rolled2 = [functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), downs_list) for downs_list in downs_rolled]
+
+    #flatten into single dataframe
+    downs_flat = functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), [down_df for down_df in downs_rolled2 if len(down_df) > 0])
+
+    #merge with other list
+    all_df2= pd.merge(all_df, downs_flat, on = 'game_id')
+    
+    all_df2['team'] = team
+
+    return(all_df2)
 
 
 
