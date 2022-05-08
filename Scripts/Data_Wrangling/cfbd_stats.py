@@ -442,7 +442,10 @@ def stats_function(team,
     downs_flat = functools.reduce(lambda x, y: pd.merge(x, y, on = 'game_id'), [down_df for down_df in downs_rolled2 if len(down_df) > 0])
 
     #merge with other list
-    all_df2= pd.merge(all_df, downs_flat, on = 'game_id')
+    all_df2 = pd.merge(all_df, downs_flat, on = 'game_id', how = 'left')
+    
+    #fill na with 0
+    all_df2 = all_df2.fillna(0)
     
     all_df2['team'] = team
 

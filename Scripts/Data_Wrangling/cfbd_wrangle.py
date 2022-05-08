@@ -51,10 +51,15 @@ teams_df = teams_df.drop_duplicates(subset = ['school'])
 #populate list of team dataframes
 team_stats = []
 for team in teams_df.school.values:
-    team_stats.append(cfbd_stats.stats_function(team, years) )
-    print(team)
-    time.sleep(np.random.rand())
+    if team == 'James Madison':
+        continue
+    else:
+        team_stats.append(cfbd_stats.stats_function(team, years) )
+        print(team)
+        time.sleep(1 + np.random.rand())
     
+#convert list of dfs to one dfs
+stats_df = pd.concat(team_stats)
 ### get list of teams/years
 ### run on everything
 ### get recruiting
