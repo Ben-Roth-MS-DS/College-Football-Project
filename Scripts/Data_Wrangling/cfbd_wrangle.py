@@ -71,8 +71,15 @@ team_recruiting_instance = cfbd.RecruitingApi(cfbd.ApiClient(configuration))
 team_rec_response = team_recruiting_instance.get_recruiting_teams()
 recruiting_df = pd.DataFrame([team_rec_response[i].to_dict() for i in range(len(team_rec_response))])
 
-#run 
+#only keep schools in fbs
+recruiting_df = recruiting_df.loc[recruiting_df.team.isin(teams_df.school.values), :]
 
+#run recruiting averages function
+recruiting_df_list = [cfbd_recruits.recruiting_rolled(df = recruiting_df, team = team) 
+                     for team in recruiting_df.team.unique()]
+
+#concat list
+recruiting_df_fin = pd.concat(recruiting_df_list)
 
 ### get list of teams/years
 ### run on everything
