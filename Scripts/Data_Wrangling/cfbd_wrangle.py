@@ -10,6 +10,7 @@ import functools
 import pandas as pd
 import numpy as np
 import cfbd_stats
+import cfbd_recruits
 import time
 
 #get api key
@@ -60,6 +61,19 @@ for team in teams_df.school.values:
     
 #convert list of dfs to one dfs
 stats_df = pd.concat(team_stats)
+
+### Recruiting
+
+# create an instance of the API class
+team_recruiting_instance = cfbd.RecruitingApi(cfbd.ApiClient(configuration))
+
+#pull team recruiting, convert to dataframe
+team_rec_response = team_recruiting_instance.get_recruiting_teams()
+recruiting_df = pd.DataFrame([team_rec_response[i].to_dict() for i in range(len(team_rec_response))])
+
+#run 
+
+
 ### get list of teams/years
 ### run on everything
 ### get recruiting
