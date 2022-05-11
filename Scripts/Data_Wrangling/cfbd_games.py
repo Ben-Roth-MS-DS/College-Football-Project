@@ -5,59 +5,11 @@ Created on Wed May 11 10:23:19 2022
 
 @author: Broth
 """
-import cfbd
-import functools
-import pandas as pd
-import numpy as np
-import cfbd_stats
-import cfbd_recruits
-import time
-
-#get api key
-file = open('../../Data/key.txt')
-key = file.read().replace("\n", " ")
-file.close()
-
-# Configure API key authorization: ApiKeyAuth
-configuration = cfbd.Configuration()
-configuration.api_key['Authorization'] = key
-configuration.api_key_prefix['Authorization'] = 'Bearer'
-
-games_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
-
-#list of regular season games
-games_response = games_instance.get_games(year = year, team = team)
-
-#list of postseason games
-postseason_response = games_instance.get_games(year = year, team = team, season_type = 'postseason')
-
-#convert to list of dictionaries
-games_list = [games_response[i].to_dict() for i in range(len(games_response))]
-postseason_list = [postseason_response[i].to_dict() for i in range(len(postseason_response))]
-
-#convert to dataframe
-games_df = pd.DataFrame(games_list)
-postseason_df = pd.DataFrame(postseason_list)
-
-#combine to single df
-games_df = pd.concat([games_df, postseason_df], axis = 0)
-
-#create postseason flag 
-games_df.loc[games_df.season_type == 'postseason', 'postseason_flag'] = 1
-games_df.postseason_flag.fillna(0, inplace = True)
-
-
-
-#keep columns of interest
-games_df = games_df[['id', 'season', 'week', 'start_time_tbd', 'neutral_site','postseason_flag',
-                     'conference_game', 'home_team', 'home_conference', 'home_points',
-                     'home_line_scores', 'home_pregame_elo', 'away_team', 'away_conference', 
-                     'away_points', 'away_line_scores', 'away_pregame_elo']]
 
 def teamify(df, team):
     '''
     Purpose
-        -  Function converts dataframe with home/away values to team/opponent values
+        -  Function converts dataframe with home/away values to team/opp values
         
     Inputs
         - df (DataFrame): Dataframe containing cfbd game data
@@ -70,24 +22,88 @@ def teamify(df, team):
     home = df.loc[df.home_team == team, :]
     away = df.loc[df.away_team == team, :]
     
-    #rename home/away columns to team/opponent
+    #rename home/away columns to team/opp
     home.columns = [home_col.replace('home', 'team') for home_col in home.columns]
-    home.columns = [away_col.replace('away', 'opponent') for away_col in home.columns]
+    home.columns = [away_col.replace('away', 'opp') for away_col in home.columns]
     
-    #rename away/home columns to team/opponent
-    away.columns = [home_col.replace('home', 'opponent') for home_col in away.columns]
+    #rename away/home columns to team/opp
+    away.columns = [home_col.replace('home', 'opp') for home_col in away.columns]
     away.columns = [away_col.replace('away', 'team') for away_col in away.columns]
     
     #combine to single dataframe
     team_games = pd.concat([home, away], axis = 0).sort_values(['id'])
     
     return(team_games.drop_duplicates(subset = 'id'))
+
+
+def rolling_games(df,
+                  stats = ['team_points', 'team_pregame_elo', 'team_q1_score', 'team_q2_score',
+                         'team_q3_score', 'team_q4_score', 'opp_points', 'opp_pregame_elo', 
+                         'opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score'],
+                  rolling_numbers = [3, 6, 12]):
+     
+    '''
+    Purpose
+        - Function that counts and calculates rolling occurances games
+          
+    Inputs
+        - df (pd.DataFrame): Dataframe at the team-game level
+        - stat (str): Stat (e.g. team_points) that is to be rolled up
+        - rolling_numbers (list): List of numbers that defines the number of 
+                                  previous game averages wished to be calculated
+                                  
+    Outputs
+        - df_game_team(pd.DataFrame): Dataframe at the team_game_id level that contains
+                                      rolled up stats
+
+    '''
+    #sort by game id
+    df = df.sort_values('id').reset_index(drop = True)
     
-teamify_df = teamify(games_df, 'Arizona State')
+    #create rolling averages
+    rolling_team_list = [df[stats].\
+                           rolling(window, 1).\
+                           mean().\
+                           reset_index(drop = True).\
+                           rename(columns = {column:column+'_' + str(window) + '_game_avg' for column in stats})
+                        for window in rolling_numbers]
+        
+    #flatten to dataframe
+    rolling_team_df = pd.concat(rolling_team_list, axis = 1).reset_index(drop = True)
+        
+    #combine to main df    
+    df_game_team = pd.concat([df, rolling_team_df], axis = 1)
+    
+    return(df_game_team)
 
-teamify_df.team_line_scores.to_list()
 
+#define final function
+def all_games(df,
+              team,
+              stats = ['team_points', 'team_pregame_elo', 'team_q1_score', 'team_q2_score',
+                         'team_q3_score', 'team_q4_score', 'opp_points', 'opp_pregame_elo', 
+                         'opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score'],
+              rolling_numbers = [3, 6, 12]):
+    '''
+    
+    '''
+    #teamify dataframe
+    teamify_df = teamify(df = df,
+                         team = team)
+    
+    #convert 1 column of quarter scores to 4 quarters
+    teamify_df[['team_q1_score', 'team_q2_score', 'team_q3_score', 'team_q4_score']] = teamify_df.team_line_scores.to_list()
+    teamify_df[['opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score']] = teamify_df.opp_line_scores.to_list()
 
-
-
-
+    #drop quarter score list columns
+    teamify_df.drop(['team_line_scores', 'opp_line_scores'], axis = 1, inplace = True)
+    
+    #run rolling aggregates on function
+    df_game_team = rolling_games(df = teamify_df)
+    
+    return(df_game_team)
+    
+    
+    
+    
+    
