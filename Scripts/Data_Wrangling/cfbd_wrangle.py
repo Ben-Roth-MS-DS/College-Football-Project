@@ -64,11 +64,7 @@ stats_df = pd.concat(team_stats)
 
 ### Recruiting
 
-# create an instance of the API class
-team_recruiting_instance = cfbd.RecruitingApi(cfbd.ApiClient(configuration))
-
-#pull team recruiting, convert to dataframe
-team_rec_response = team_recruiting_instance.get_recruiting_teams()
+#create recruiting dataframe
 recruiting_df = pd.DataFrame([team_rec_response[i].to_dict() for i in range(len(team_rec_response))])
 
 #only keep schools in fbs
@@ -81,22 +77,27 @@ recruiting_df_list = [cfbd_recruits.recruiting_rolled(df = recruiting_df, team =
 #concat list
 recruiting_df_fin = pd.concat(recruiting_df_list)
 
-### get list of teams/years
-### run on everything
-### get recruiting
-### aggregate recruiting
-### see if can figure out games_advanced_response
+### Returning Production
 
-games_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
+#define instance
+players_instance = cfbd.PlayersApi(cfbd.ApiClient(configuration))
 
-games_response = games_instance.get_games(year = year, team = team)
+#get list of responses, returning production api only goes back to 2014
+prod_responses = [players_instance.get_returning_production(year = year) for year in years if year > 2013]
 
-games_list = [games_response[i].to_dict() for i in range(len(games_response))]
+#convert to list of dictionaries
+prod_lists = [[prod_response[i].to_dict() for i in range(len(prod_response))] for prod_response in prod_responses]
 
-games_df = pd.DataFrame.from_records(games_list)
+#convert list of dictionaries to list of dfs
+prod_dfs = [pd.DataFrame(prod_list) for prod_list in prod_lists]
+
+#convert to single dataframe
+prod_df = pd.concat(prod_dfs, axis = 0)
 
 
-games_advanced_response = games_instance.get_advanced_box_score(game_id = int(games_df['id'][5]))
+### Games Info
 
 
-game_ids = play_stats_df.game_id.unique()
+
+
+
