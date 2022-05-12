@@ -171,7 +171,7 @@ games_recruiting = pd.merge(left = games_rolled_df,
 games_recruiting.drop('year', axis = 1).rename(columns = {'points':'rec_points'}, inplace = True)
 
 #join production
-gr_prod = pd.merge(left = games_rolled_df,
+gr_prod = pd.merge(left = games_recruiting,
                    right = prod_df,
                    on = ['season', 'team'])
 
@@ -190,9 +190,57 @@ team_final.drop(columns = ['game_id'], inplace = True)
 
 
 ### Create table for team and opponent rolling performance
-game_cols = [col for col in games_rolled_df.columns if column not in ]
+
+#define columns
+game_cols = [col for col in games_rolled_df.columns if col not in ['id', 'season', 'week', 'start_date', 
+                                                                      'neutral_site', 'postseason_flag',
+                                                                      'conference_game', 'team', 'opp']]
+stats_cols = [col for col in stats_df.columns if col not in ['gamed_id', 'team']]
+prod_cols = [col for col in prod_df if col not in ['season', 'team', 'conference']]
+rec_cols = [col for col in recruiting_df_fin.columns if col not in ['year', 'rank', 'team', 'points']] + ['rec_points']
+
+#change nomenclature
+non_game_cols = stats_cols + prod_cols+ rec_cols
+
+#rename fields so they refer to team or opponent
+team_final = team_final.rename(columns = {col:col.replace('opp', 'team_allowed') for col in game_cols})
+team_final = team_final.rename(columns = {col:'team_' + col for col in non_game_cols})
+
+#define fields to not include opponent table creation via rename
+non_opp_fields = ['id', 'season', 'week', 'start_date', 'neutral_site',
+                  'postseason_flag', 'conference_game', 'team', 'opp']
+
+#create opp table by renaming 
+opp_final = team_final.rename(columns = {col:col.replace('team', 'opp') for col in team_final.columns if col not in non_opp_fields})
+opp_final.rename(columns = {'team':'opp', 'opp':'team'}, inplace = True)
 
 
+#join back to team_df to have opponent performance
+final_df = pd.merge(left = team_final,
+                    right = opp_final,
+                    left_on = ['team', 'opp', 'id', 'season', 'week', 'start_date',
+                               'postseason_flag', 'conference_game', 'neutral_site'],
+                    right_on = ['opp', 'team', 'id', 'season', 'week', 'start_date',
+                               'postseason_flag', 'conference_game', 'neutral_site'])
+
+
+#remove and rename duplicate columns
+final_df.rename(columns = {col:col.replace('_x', '') for col in final_df.columns}, inplace = True)
+final_df.drop(columns = [col for col in final_df.columns if '_y' in col], inplace = True)
+
+#create dummy columns for conferences, add back, drop columns where dummies originated
+team_dummies = pd.get_dummies(final_df.team_conference, prefix = 'Team')
+opp_dummies = pd.get_dummies(final_df.opp_conference, prefix = 'Opp')
+final_df = pd.concat([final_df, team_dummies, opp_dummies], axis = 1).\
+              drop(columns = ['team_conference', 'opp_conference',
+                              'team_allowed_conference', 'opp_allowed_conference'])
+
+#convert "true/false" columns to 1/0
+final_df.conference_game = final_df.conference_game.astype(int)
+final_df.neutral_site = final_df.neutral_site.astype(int)
+
+#save
+final_df.to_csv('../../Data/model_data.csv')
 
 
 
