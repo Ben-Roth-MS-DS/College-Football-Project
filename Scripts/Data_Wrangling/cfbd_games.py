@@ -5,6 +5,7 @@ Created on Wed May 11 10:23:19 2022
 
 @author: Broth
 """
+import pandas as pd
 
 def teamify(df, team):
     '''
@@ -77,12 +78,44 @@ def rolling_games(df,
     return(df_game_team)
 
 
+#create function to flatten quarter scores
+def line_fixer(x):
+    '''
+    Purpose
+        - This function intakes a list of scores either for 4 quarters or 
+          4 quarters + n OT periods and outputs a list of 4 quarter scores,
+          the total number of points scored after quarter 4, and a flag denoting
+          whether there was overtime
+          
+    Input
+        - x (list): List of scores by period 
+        
+    Output
+        - fixed (list): List of scores by quarter, total OT points, and OT flag
+    
+    '''
+    if len(x) > 4:
+        fixed = x[:4] + [sum(x[4:])] + [1]
+        return(fixed)
+        
+    else:
+        #fill with zeros if rained out game
+        while len(x) < 4:
+            x.append(0)
+        
+        fixed = x + [0] + [0]
+        return(fixed)
+    
+    
+    
+    
+
 #define final function
 def all_games(df,
               team,
-              stats = ['team_points', 'team_pregame_elo', 'team_q1_score', 'team_q2_score',
-                         'team_q3_score', 'team_q4_score', 'opp_points', 'opp_pregame_elo', 
-                         'opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score'],
+              stats = ['team_points', 'team_pregame_elo', 'ot_flag', 'team_q1_score', 'team_q2_score',
+                       'team_q3_score', 'team_q4_score', 'team_ot_score' 'opp_points', 'opp_pregame_elo', 
+                       'opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score', 'opp_ot_score'],
               rolling_numbers = [3, 6, 12]):
     '''
     
@@ -91,9 +124,13 @@ def all_games(df,
     teamify_df = teamify(df = df,
                          team = team)
     
-    #convert 1 column of quarter scores to 4 quarters
-    teamify_df[['team_q1_score', 'team_q2_score', 'team_q3_score', 'team_q4_score']] = teamify_df.team_line_scores.to_list()
-    teamify_df[['opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score']] = teamify_df.opp_line_scores.to_list()
+    #run fixer column on lines
+    teamify_df.team_line_scores = teamify_df.team_line_scores.apply(lambda x: line_fixer(x))
+    teamify_df.opp_line_scores = teamify_df.opp_line_scores.apply(lambda x: line_fixer(x))    
+    
+    
+    teamify_df[['team_q1_score', 'team_q2_score', 'team_q3_score', 'team_q4_score', 'team_ot_score', 'ot_flag']] = teamify_df.team_line_scores.to_list()
+    teamify_df[['opp_q1_score', 'opp_q2_score', 'opp_q3_score', 'opp_q4_score', 'opp_ot_score', 'ot_flag']] = teamify_df.opp_line_scores.to_list()
 
     #drop quarter score list columns
     teamify_df.drop(['team_line_scores', 'opp_line_scores'], axis = 1, inplace = True)
@@ -102,8 +139,5 @@ def all_games(df,
     df_game_team = rolling_games(df = teamify_df)
     
     return(df_game_team)
-    
-    
-    
     
     
