@@ -29,12 +29,13 @@ configuration.api_key_prefix['Authorization'] = 'Bearer'
 
 # create an instance of the API class
 team_recruiting_instance = cfbd.RecruitingApi(cfbd.ApiClient(configuration))
-start_year = min( # int | Starting year (optional)
+start_year = 2013 # int | Starting year (optional)
 end_year = 2021 # int | Ending year (optional)
 
-group_rec_response = team_recruiting_instance.get_recruiting_groups(start_year=start_year, end_year=end_year)
-#average_rating, average_stars, commits, conference
-team_rec_response[0]
+#pull team recruiting, convert to dataframe
+team_rec_response = team_recruiting_instance.get_recruiting_teams(year = 2013)
+teams_df = pd.DataFrame([team_rec_response[i].to_dict() for i in range(len(team_rec_response))])
 
-team_rec_response = team_recruiting_instance.get_recruiting_teams()
-team_rec_df = pd.DataFrame(team_rec_response[i].to_dict() for i in range(len(team_rec_response)))
+
+
+
