@@ -212,6 +212,61 @@ best_predictions_feat = best_model_features.predict(X_test[best_features])
 
 xgb_feat_mpd = mean_poisson_deviance(y_true = y_test, y_pred = best_predictions_feat)
 
+## run models to compare performance across various training periods and how often 
+
+#define function
+def xgboost_period_testing(n, df, param_dict, periods):
+        
+    '''
+    Purpose
+        - Visualize and compare model decay based on how many years the model is 
+          trained on to determine what length of time of model produces best result
+          both in terms of retraining and re-tuning
+          
+    Inputs
+        - n (int): Number of years to train model on
+        - df (pd.DataFrame): DataFrame to train on
+        - param_dict (dict): Dictionary of parameters to tune 
+        - periods (list): List of periods for which to slice and train model on
+                                  
+    Outputs
+        - run_numbers (list): List of run counts
+        - mean_poisson_deviances (list): List of mean_poisson_deviances 
+                                         associated with a run number
+        
+    '''
+
+## models have to be retrained
+
+##  One Year training period
+
+# retraining every year
+
+# retraining every other year
+
+# retraining every three years
+
+# retraining every four years
+
+# retraining every five years
+
+# retraining every six years
+
+
+## Two Year Training Period
+
+# retraining every year
+
+# retraining every two years
+
+# retraining every three years
+
+# retraining
+## Three Year Training Period
+train_df = df.loc[df.season < 2020, :]
+test_df = df.loc[df.season >= 2020, :]
+
+
 
 
 
